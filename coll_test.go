@@ -1,7 +1,9 @@
 package fun
 
 import (
+	"math"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -186,5 +188,57 @@ func TestFunctions(t *testing.T) {
 	_, err := Remove([]func(){func() {}, func() {}}, func() {})
 	if err != ErrNotSupported {
 		t.Errorf("returned: %v, expected: %v", err, ErrNotSupported)
+	}
+}
+
+func TestMapSquare(t *testing.T) {
+	ints := []int{1, 3, 5, 7, 9}
+	expected := []int{1, 9, 25, 49, 81}
+
+	result, err := Map(ints, func(x int) int { return x * x })
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(result, expected) {
+		t.Errorf("returned: %v, expected: %v", result, expected)
+	}
+}
+
+func TestMapSqrt(t *testing.T) {
+	floats := []float64{0.25, 1.0, 4.0, 9.0, 16.0}
+	expected := []float64{0.5, 1.0, 2.0, 3.0, 4.0}
+
+	result, err := Map(floats, math.Sqrt)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(result, expected) {
+		t.Errorf("returned: %v, expected: %v", result, expected)
+	}
+}
+
+func TestMapUppercase(t *testing.T) {
+	strs := []string{"foo", "bar", "baz"}
+	expected := []string{"FOO", "BAR", "BAZ"}
+
+	result, err := Map(strs, strings.ToUpper)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if reflect.DeepEqual(result, expected) {
+		t.Errorf("returned: %v, expected: %v", result, expected)
+	}
+}
+
+func TestCapitalize(t *testing.T) {
+	s := "foo,bar,baz"
+	expected := "Foo,Bar,Baz"
+
+	result := Capitalize(s, ",")
+	if result != expected {
+		t.Errorf("returned: %s, expected: %s", result, expected)
 	}
 }

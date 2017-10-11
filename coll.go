@@ -13,7 +13,9 @@ var (
 	ErrNotCompatible  = errors.New("types not compatible")
 )
 
-// Remove removes elements from an array/slice, returns a new slice.
+// Remove removes elements from an array/slice and returns a new slice in comlexity
+// of O(len(series)). Notice that it falls back to O(len(series) * len(removes))
+// when it comes to slice of maps/slice.
 func Remove(series interface{}, removes ...interface{}) (interface{}, error) {
 	st := reflect.TypeOf(series)
 	sv := reflect.ValueOf(series)
