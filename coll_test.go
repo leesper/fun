@@ -77,7 +77,33 @@ func TestFloatsRemove(t *testing.T) {
 	}
 }
 
-func TestMapsRemove(t *testing.T)     {}
+func TestMapsRemove(t *testing.T) {
+	maps := []map[string]int{
+		map[string]int{
+			"foo": 1,
+		},
+		map[string]int{
+			"bar": 2,
+		},
+		map[string]int{
+			"baz": 3,
+		},
+	}
+	removed := []map[string]int{
+		map[string]int{
+			"baz": 3,
+		},
+	}
+
+	result, err := Remove(maps, map[string]int{"foo": 1}, map[string]int{"bar": 2})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(result, removed) {
+		t.Errorf("returned: %v, expected: %v", result, removed)
+	}
+}
 func TestChansRemove(t *testing.T)    {}
 func TestStructsRemove(t *testing.T)  {}
 func TestPointersRemove(t *testing.T) {}
