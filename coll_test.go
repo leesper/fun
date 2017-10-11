@@ -104,6 +104,87 @@ func TestMapsRemove(t *testing.T) {
 		t.Errorf("returned: %v, expected: %v", result, removed)
 	}
 }
-func TestChansRemove(t *testing.T)    {}
-func TestStructsRemove(t *testing.T)  {}
-func TestPointersRemove(t *testing.T) {}
+
+func TestIncompatible(t *testing.T) {
+	strs := []string{"foo", "bar", "baz"}
+	_, err := Remove(strs, 1, 2)
+	if err == nil {
+		t.Errorf("should return %v", ErrNotCompatible)
+	}
+}
+
+func TestNoRemove(t *testing.T) {
+	ints := []int{1, 2, 3}
+	result, err := Remove(ints)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(ints, result) {
+		t.Errorf("returned: %v, expected: %v", result, ints)
+	}
+}
+
+type testStruct struct {
+	foo string
+	bar int
+	baz float64
+}
+
+func TestStructsRemove(t *testing.T) {
+	structs := []testStruct{
+		testStruct{"foo", 1, 1.2},
+		testStruct{"bar", 2, 2.2},
+		testStruct{"baz", 3, 3.2},
+	}
+	removed := []testStruct{
+		testStruct{"bar", 2, 2.2},
+	}
+
+	result, err := Remove(structs, testStruct{"foo", 1, 1.2}, testStruct{"baz", 3, 3.2})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(result, removed) {
+		t.Errorf("returned: %v, expected: %v", result, removed)
+	}
+}
+
+func TestPointersRemove(t *testing.T) {
+	foo := &testStruct{"foo", 1, 1.2}
+	bar := &testStruct{"bar", 2, 2.2}
+	baz := &testStruct{"baz", 3, 3.2}
+
+	ptrs := []*testStruct{
+		foo,
+		bar,
+		baz,
+	}
+	removed := []*testStruct{
+		bar,
+	}
+
+	result, err := Remove(ptrs, foo, baz)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(result, removed) {
+		t.Errorf("returned: %v, expected: %v", result, removed)
+	}
+}
+
+func TestNotArraySlice(t *testing.T) {
+	_, err := Remove(map[string]int{}, 2, 3)
+	if err != ErrNotArraySlice {
+		t.Errorf("returned %v, expected: %v", err, ErrNotArraySlice)
+	}
+}
+
+func TestFunctions(t *testing.T) {
+	_, err := Remove([]func(){func() {}, func() {}}, func() {})
+	if err != ErrNotSupported {
+		t.Errorf("returned: %v, expected: %v", err, ErrNotSupported)
+	}
+}
