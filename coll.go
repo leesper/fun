@@ -11,6 +11,8 @@ var (
 	ErrNotSupported   = errors.New("not supported")
 	ErrNotArraySlice  = errors.New("not an array or slice")
 	ErrNotCompatible  = errors.New("types not compatible")
+	ErrNotFunc        = errors.New("not a function")
+	ErrFuncParam      = errors.New("invalid function parameters")
 )
 
 // Remove removes elements from an array/slice and returns a new slice in comlexity
@@ -19,18 +21,15 @@ var (
 func Remove(series interface{}, removes ...interface{}) (interface{}, error) {
 	st := reflect.TypeOf(series)
 	sv := reflect.ValueOf(series)
-	if st.Kind() != reflect.Array && st.Kind() != reflect.Slice {
-		return nil, ErrNotArraySlice
-	}
-	if st.Elem().Kind() == reflect.Func {
-		return nil, ErrNotSupported
-	}
 
-	if len(removes) == 0 {
+	switch {
+	case st.Kind() != reflect.Array && st.Kind() != reflect.Slice:
+		return nil, ErrNotArraySlice
+	case st.Elem().Kind() == reflect.Func:
+		return nil, ErrNotSupported
+	case len(removes) == 0:
 		return series, nil
-	}
-	rt := reflect.TypeOf(removes[0])
-	if st.Elem().Kind() != rt.Kind() {
+	case st.Elem().Kind() != reflect.TypeOf(removes[0]).Kind():
 		return nil, ErrNotCompatible
 	}
 
@@ -67,6 +66,22 @@ func Remove(series interface{}, removes ...interface{}) (interface{}, error) {
 // Map accepts an array/slice and a function, call function on every element
 // and returns a new slice of results.
 func Map(series interface{}, f interface{}) (interface{}, error) {
+	st := reflect.TypeOf(series)
+	// sv := reflect.ValueOf(series)
+	ft := reflect.TypeOf(f)
+	// fv := reflect.ValueOf(f)
+
+	switch {
+	case st.Kind() != reflect.Slice && st.Kind() != reflect.Array:
+		return nil, ErrNotArraySlice
+	case ft.Kind() != reflect.Func:
+		return nil, ErrNotFunc
+	case ft.NumIn() != 1 || ft.NumOut() != 1:
+		return nil, ErrFuncParam
+	case ft.In(0).Kind() != st.Elem().Kind():
+		return nil, ErrNotCompatible
+	}
+
 	return nil, ErrNotImplemented
 }
 
