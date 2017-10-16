@@ -95,4 +95,34 @@ func In(collection interface{}, element interface{}) bool {
 	return false
 }
 
+// Filter returns a new slice with all elements that pass the test implemented by
+// the provided function filterFunc.
+func Filter(series interface{}, filterFunc interface{}) (interface{}, error) {
+	return nil, ErrNotImplemented
+}
+
+// Find returns the value of the first element in series taht satisfies the
+// provided testing function.
+func Find(series interface{}, findFunc interface{}) (interface{}, error) {
+	return nil, ErrNotImplemented
+}
+
+// Every returns true if all elements in the array pass the test implemented by
+// the provided function.
+func Every(series interface{}, everyFunc interface{}) bool {
+	return false
+}
+
+// Some returns true if at least one element in the series passes the test
+// implemented by someFunc.
+func Some(series interface{}, someFunc interface{}) bool {
+	return false
+}
+
+// Reduce applies a reduceFunc against an accumulator and each element in the series
+// frome left to right to reduce it to a single value, reduceFunc must be func(acc, val) val.
+func Reduce(series interface{}, reduceFunc interface{}, initial interface{}) (interface{}, error) {
+	return nil, ErrNotImplemented
+}
+
 // push pop splice
