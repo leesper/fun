@@ -180,8 +180,8 @@ func TestPointersRemove(t *testing.T) {
 
 func TestNotArraySlice(t *testing.T) {
 	_, err := Remove(map[string]int{}, 2, 3)
-	if err != ErrNotArraySlice {
-		t.Errorf("returned %v, expected: %v", err, ErrNotArraySlice)
+	if err != ErrNotArrayOrSlice {
+		t.Errorf("returned %v, expected: %v", err, ErrNotArrayOrSlice)
 	}
 }
 
@@ -214,7 +214,6 @@ func TestMapSqrt(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
 	if !reflect.DeepEqual(result, expected) {
 		t.Errorf("returned: %v, expected: %v", result, expected)
 	}
@@ -229,8 +228,47 @@ func TestMapUppercase(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if fmt.Sprintf("%v", result) != fmt.Sprintf("%v", expected) {
+	fmt.Println(reflect.DeepEqual([]string{"foo", "bar", "baz"}, []string{"foo", "bar", "baz"}))
+	// if fmt.Sprintf("%v", result) != fmt.Sprintf("%v", expected) {
+	res := result.([]string)
+	fmt.Println(res)
+	if reflect.DeepEqual(result, expected) {
 		t.Errorf("returned: %v, expected: %v", result, expected)
+	}
+}
+
+func TestMapNotSeries(t *testing.T) {
+	_, err := Map(2, func() {})
+	if err != ErrNotArrayOrSlice {
+		t.Errorf("returned: %v, expected: %v", err, ErrNotArrayOrSlice)
+	}
+}
+
+func TestMapNotFunc(t *testing.T) {
+	_, err := Map([]int{1, 2, 3}, 3)
+	if err != ErrNotFunc {
+		t.Errorf("returned: %v, expected: %v", err, ErrNotFunc)
+	}
+}
+
+func TestMapErrFuncInParam(t *testing.T) {
+	_, err := Map([]int{1, 2, 3}, func(i, j int) int { return 0 })
+	if err != ErrFuncParam {
+		t.Errorf("returned: %v, expected: %v", err, ErrFuncParam)
+	}
+}
+
+func TestMapErrFuncOutParam(t *testing.T) {
+	_, err := Map([]int{1, 2, 3}, func(i int) (int, int) { return 0, 1 })
+	if err != ErrFuncParam {
+		t.Errorf("returned: %v, expected: %v", err, ErrFuncParam)
+	}
+}
+
+func TestMapNotCompatible(t *testing.T) {
+	_, err := Map([]int{1, 2, 3}, func(s string) int { return len(s) })
+	if err != ErrNotCompatible {
+		t.Errorf("returned: %v, expected: %v", err, ErrNotCompatible)
 	}
 }
 
@@ -243,3 +281,11 @@ func TestCapitalize(t *testing.T) {
 		t.Errorf("returned: %s, expected: %s", result, expected)
 	}
 }
+
+func TestStringsIn(t *testing.T)      {}
+func TestFunctionsIn(t *testing.T)    {}
+func TestIntsNotIn(t *testing.T)      {}
+func TestStructsIn(t *testing.T)      {}
+func TestPtrsIn(t *testing.T)         {}
+func TestFilterEven(t *testing.T)     {}
+func TestFilterPositive(t *testing.T) {}

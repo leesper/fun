@@ -7,12 +7,12 @@ import (
 
 // errors defined
 var (
-	ErrNotImplemented = errors.New("not implemented")
-	ErrNotSupported   = errors.New("not supported")
-	ErrNotArraySlice  = errors.New("not an array or slice")
-	ErrNotCompatible  = errors.New("types not compatible")
-	ErrNotFunc        = errors.New("not a function")
-	ErrFuncParam      = errors.New("invalid function parameters")
+	ErrNotImplemented  = errors.New("not implemented")
+	ErrNotSupported    = errors.New("not supported")
+	ErrNotArrayOrSlice = errors.New("not an array or slice")
+	ErrNotCompatible   = errors.New("types not compatible")
+	ErrNotFunc         = errors.New("not a function")
+	ErrFuncParam       = errors.New("invalid function parameters")
 )
 
 // Remove removes elements from an array/slice and returns a new slice in comlexity
@@ -24,7 +24,7 @@ func Remove(series interface{}, removes ...interface{}) (interface{}, error) {
 
 	switch {
 	case st.Kind() != reflect.Array && st.Kind() != reflect.Slice:
-		return nil, ErrNotArraySlice
+		return nil, ErrNotArrayOrSlice
 	case st.Elem().Kind() == reflect.Func:
 		return nil, ErrNotSupported
 	case len(removes) == 0:
@@ -73,7 +73,7 @@ func Map(series interface{}, f interface{}) (interface{}, error) {
 
 	switch {
 	case st.Kind() != reflect.Slice && st.Kind() != reflect.Array:
-		return nil, ErrNotArraySlice
+		return nil, ErrNotArrayOrSlice
 	case ft.Kind() != reflect.Func:
 		return nil, ErrNotFunc
 	case ft.NumIn() != 1 || ft.NumOut() != 1:
@@ -88,11 +88,6 @@ func Map(series interface{}, f interface{}) (interface{}, error) {
 	}
 
 	return mapped.Interface(), nil
-}
-
-// ForEach calls function f on every element of an array/slice.
-func ForEach(series interface{}, f interface{}) error {
-	return ErrNotImplemented
 }
 
 // In checks whether an element is in collection.
