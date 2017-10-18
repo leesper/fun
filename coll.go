@@ -67,9 +67,9 @@ func Remove(series interface{}, removes ...interface{}) (interface{}, error) {
 // and returns a new slice of results.
 func Map(series interface{}, f interface{}) (interface{}, error) {
 	st := reflect.TypeOf(series)
-	// sv := reflect.ValueOf(series)
+	sv := reflect.ValueOf(series)
 	ft := reflect.TypeOf(f)
-	// fv := reflect.ValueOf(f)
+	fv := reflect.ValueOf(f)
 
 	switch {
 	case st.Kind() != reflect.Slice && st.Kind() != reflect.Array:
@@ -82,7 +82,12 @@ func Map(series interface{}, f interface{}) (interface{}, error) {
 		return nil, ErrNotCompatible
 	}
 
-	return nil, ErrNotImplemented
+	mapped := reflect.MakeSlice(reflect.SliceOf(ft.Out(0)), 0, 0)
+	for i := 0; i < sv.Len(); i++ {
+		mapped = reflect.Append(mapped, fv.Call([]reflect.Value{sv.Index(i)})...)
+	}
+
+	return mapped.Interface(), nil
 }
 
 // ForEach calls function f on every element of an array/slice.
