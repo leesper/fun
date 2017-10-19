@@ -1,7 +1,6 @@
 package fun
 
 import (
-	"fmt"
 	"math"
 	"reflect"
 	"strings"
@@ -227,12 +226,7 @@ func TestMapUppercase(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	fmt.Println(reflect.DeepEqual([]string{"foo", "bar", "baz"}, []string{"foo", "bar", "baz"}))
-	// if fmt.Sprintf("%v", result) != fmt.Sprintf("%v", expected) {
-	res := result.([]string)
-	fmt.Println(res)
-	if reflect.DeepEqual(result, expected) {
+	if !reflect.DeepEqual(result, expected) {
 		t.Errorf("returned: %v, expected: %v", result, expected)
 	}
 }

@@ -3,6 +3,7 @@ package fun
 import (
 	"errors"
 	"reflect"
+	"unsafe"
 )
 
 // errors defined
@@ -126,3 +127,84 @@ func Reduce(series interface{}, reduceFunc interface{}, initial interface{}) (in
 }
 
 // push pop splice
+type visit struct {
+	a1  unsafe.Pointer
+	a2  unsafe.Pointer
+	typ reflect.Type
+}
+
+func DeepEqual(x, y interface{}) bool {
+	if x == nil || y == nil {
+		return x == y
+	}
+	v1 := reflect.ValueOf(x)
+	v2 := reflect.ValueOf(y)
+	if v1.Type() != v2.Type() {
+		return false
+	}
+	return DeepValueEqual(v1, v2, make(map[visit]bool), 0)
+}
+
+func DeepValueEqual(v1, v2 reflect.Value, visited map[visit]bool, depth int) bool {
+	if !v1.IsValid() || !v2.IsValid() {
+		return v1.IsValid() == v2.IsValid()
+	}
+	if v1.Type() != v2.Type() {
+		return false
+	}
+
+	// if depth > 10 { panic("deepValueEqual") }	// for debugging
+
+	// We want to avoid putting more in the visited map than we need to.
+	// For any possible reference cycle that might be encountered,
+	// hard(t) needs to return true for at least one of the types in the cycle.
+	hard := func(k reflect.Kind) bool {
+		switch k {
+		case reflect.Map, reflect.Slice, reflect.Ptr, reflect.Interface:
+			return true
+		}
+		return false
+	}
+
+	if v1.CanAddr() && v2.CanAddr() && hard(v1.Kind()) {
+		addr1 := unsafe.Pointer(v1.UnsafeAddr())
+		addr2 := unsafe.Pointer(v2.UnsafeAddr())
+		if uintptr(addr1) > uintptr(addr2) {
+			// Canonicalize order to reduce number of entries in visited.
+			// Assumes non-moving garbage collector.
+			addr1, addr2 = addr2, addr1
+		}
+
+		// Short circuit if references are already seen.
+		typ := v1.Type()
+		v := visit{addr1, addr2, typ}
+		if visited[v] {
+			return true
+		}
+
+		// Remember for later.
+		visited[v] = true
+	}
+
+	switch v1.Kind() {
+	case reflect.Slice:
+		if v1.IsNil() != v2.IsNil() {
+			return false
+		}
+		if v1.Len() != v2.Len() {
+			return false
+		}
+		if v1.Pointer() == v2.Pointer() {
+			return true
+		}
+		for i := 0; i < v1.Len(); i++ {
+			if !DeepValueEqual(v1.Index(i), v2.Index(i), visited, depth+1) {
+				return false
+			}
+		}
+		return true
+	default:
+		// Normal equality suffices
+		return true
+	}
+}
